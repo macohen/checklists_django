@@ -1,5 +1,6 @@
 import datetime
 from django.db import models
+from django.utils import timezone
 
 class TodoItem(models.Model):
     todoItemId = models.AutoField(primary_key=True)
@@ -12,7 +13,7 @@ class Checklist(models.Model):
 class ChecklistTodos(models.Model):
     todoItemId = models.ForeignKey(TodoItem)
     checklistId = models.ForeignKey(Checklist)
-    dateCreated = models.DateTimeField(default=datetime.datetime.now())
+    dateCreated = models.DateTimeField(default=timezone.now)
     dateUpdated = models.DateTimeField(null=True)
 
 
