@@ -82,7 +82,7 @@ DATABASES = {
     'default': {
         'ENGINE' : 'django.db.backends.postgresql_psycopg2',
         'USER' : 'cohenma',
-        'NAME' : 'checklists',
+        'NAME' : 'checklist_mgmt',
         #'PASSWORD' : 'checklists',
         'HOST' : 'localhost',
         #'PORT' : '3306'
