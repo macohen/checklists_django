@@ -13,27 +13,20 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Checklist',
             fields=[
-                ('checklistId', models.IntegerField(primary_key=True, serialize=False)),
+                ('checklistId', models.AutoField(primary_key=True, serialize=False)),
                 ('title', models.CharField(max_length=100)),
+                ('dateCreated', models.DateTimeField(auto_now_add=True)),
             ],
         ),
         migrations.CreateModel(
-            name='ChecklistTodos',
+            name='ChecklistTodo',
             fields=[
-                ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
+                ('todoId', models.AutoField(primary_key=True, db_column='id', serialize=False)),
+                ('dateCreated', models.DateTimeField(auto_now_add=True)),
+                ('dateUpdated', models.DateTimeField(null=True, blank=True)),
+                ('dateCompleted', models.DateTimeField(null=True, blank=True)),
+                ('todoDescription', models.CharField(default='Needs a Description', max_length=100)),
                 ('checklistId', models.ForeignKey(to='checklists.Checklist')),
             ],
-        ),
-        migrations.CreateModel(
-            name='TodoItem',
-            fields=[
-                ('todoItemId', models.IntegerField(primary_key=True, serialize=False)),
-                ('description', models.CharField(max_length=100, default='A Thing To Do')),
-            ],
-        ),
-        migrations.AddField(
-            model_name='checklisttodos',
-            name='todoItemId',
-            field=models.ForeignKey(to='checklists.TodoItem'),
         ),
     ]
