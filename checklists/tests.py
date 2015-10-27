@@ -1,8 +1,9 @@
+import django
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase
 from .models import Checklist, ChecklistTodo
-from checklists_django.urls import *
+from .views import ChecklistSerializer
 
 # Create your tests here.
 
@@ -22,36 +23,59 @@ class TestChecklist(TestCase):
         self.assertIsNotNone(self.checklist.dateCreated)
 
 class TestChecklistTodo(TestCase):
-     def test_it_should_have_a_description(self):
-         expected_description = 'Description'
-         self.assertEquals(expected_description, self.todo.todoDescription)
+    def setUp(self):
+        self.checklist = Checklist.objects.create(title='Checklist Master')
+        self.todo = ChecklistTodo.objects.create(todoDescription='Description', checklistId=self.checklist)
 
-     def setUp(self):
-         self.checklist = Checklist.objects.create(title='Checklist Master')
-         self.todo = ChecklistTodo.objects.create(todoDescription='Description', checklistId=self.checklist)
+    def test_it_should_have_a_description(self):
+        expected_description = 'Description'
+        self.assertEquals(expected_description, self.todo.todoDescription)
 
-     def test_it_should_print_description(self):
-         self.assertEquals('Description', str(self.todo))
+    def test_it_should_print_description(self):
+        self.assertEquals('Description', str(self.todo))
+
+    def test_get_full_checklists(self):
+        todos = self.checklist.checklisttodo_set.all()
+        self.assertEqual(1, todos.count())
+        self.assertEquals('Description' , todos[0].todoDescription)
 
 
-class TestApiRouter(APITestCase):
-    def test_get_all_checklists(self):
+class TestApiRouterWithNoData(APITestCase):
+    def test_get_all_checklists_when_empty_db(self):
         """
             Ensure we can get checklists via API when there are no data in the database
         """
         response = self.client.get('/checklists/')
+        self.assertEquals(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, [])
 
+class TestApiRouter(APITestCase):
     def test_serialize_checklist(self):
-        serializer = ChecklistSerializer(Checklist(checklistId=1, title='Test'))
-        self.assertEquals({'checklistId' : 1, 'title' : 'Test'}, serializer.data)
+        now = django.utils.timezone.now()
+        serializer = ChecklistSerializer(Checklist(checklistId=1, title='Test', dateCreated = now))
+        self.assertEquals({'checklistId' : 1, 'title' : 'Test' }, serializer.data)
 
-    def test_create_one_checklist(self):
-        data = {'title' : 'One Checklist'}
-        response = self.client.post('/checklists/',data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    def test_create_one_checklist_no_todos(self):
+        data = {'title': 'One Checklist'}
+        self.response = self.client.post('/checklists/', data, format='json')
+
+        self.assertEqual(self.response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Checklist.objects.count(), 1)
         self.assertEqual(Checklist.objects.get().title, 'One Checklist')
+        self.assertIsNotNone(Checklist.objects.get().dateCreated)
+
+    # def test_create_one_checklist_one_todo(self):
+    #     data = {'title' : 'One Checklist', 'todos' : ['Todo One']}
+    #     self.response = self.client.post('/checklists/', data, format='json')
+    #     self.assertEqual(self.response.status_code, status.HTTP_201_CREATED)
+    #     self.assertEqual(Checklist.objects.count(), 1)
+    #     self.assertEqual(Checklist.objects.get().title, 'One Checklist')
+    #     self.assertIsNotNone(Checklist.objects.get().dateCreated)
+    #     self.assertIsNotNone(1, Checklist.objects.get().)
+
+
+
+
 
 
 
